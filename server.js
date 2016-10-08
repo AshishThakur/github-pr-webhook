@@ -23,17 +23,19 @@ handler.on('pull_request', function(event) {
   simpleGit.checkout(master)
   simpleGit.mergeFromTo('FETCH_HEAD', master, ['--no-commit'], function(err) {
     if (!err) {
-      console.log('Trying to merge');
+      console.log('Trying to merge...');
     }
   })
   simpleGit.commit('temp commit', function(err) {
     if (err) {
-      console.log('Merge conflict');
-      simpleGit.reset(['hard']);
+      console.log('Merge conflict: hard reset...');
+      simpleGit.reset(['--hard']);
+      console.log("Hard reset to HEAD achieved...");
     }
     else {
-      console.log("Good to be merged with dev branch");
-      simpleGit.reset(['hard']);
+      console.log("Good to be merged with dev branch...");
+      simpleGit.reset(['--hard']);
+      console.log("Hard reset to HEAD achieved...");
       simpleGit.checkout('dev');
       simpleGit.mergeFromTo('FETCH_HEAD', dev, ['--no-ff'], function(err) {
       	if (!err) {
