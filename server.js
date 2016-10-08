@@ -2,8 +2,9 @@ var http = require('http')
 var createHandler = require('github-webhook-handler')
 var handler = createHandler({ path: '/webhook', secret: 'secret' })
 var simpleGit = require('simple-git')()
-var remote = 'upstream'
-var master = '7.x'
+var remote = 'origin'
+var master = 'master'
+var dev = 'dev'
 
 http.createServer(function (req, res) {
   handler(req, res, function (err) {
