@@ -20,15 +20,29 @@ handler.on('error', function (err) {
 handler.on('pull_request', function(event) {
   var pull_request = '+refs/pull/' + event.payload.number + '/merge:'
   simpleGit.fetch(remote, pull_request)
-  simpleGit.checkout('dev')
-  var isMergeable = event.payload.pull_request.mergeable;
-  console.log(isMergeable)
-  simpleGit.mergeFromTo('FETCH_HEAD', master, ['--no-ff'], function(err) {
-    if (err) {
-      console.log('Error')
+  simpleGit.checkout(master)
+  simpleGit.mergeFromTo('FETCH_HEAD', master, ['--no-commit'], function(err) {
+    if (!err) {
+      console.log('Trying to merge');
     }
   })
-  simpleGit.push(remote, 'dev')
+  simpleGit.commit('temp commit', function(err) {
+    if (err) {
+      console.log('Merge conflict');
+      simpleGit.reset(['hard']);
+    }
+    else {
+      console.log("Good to be merged with dev branch");
+      simpleGit.reset(['hard']);
+      simpleGit.checkout('dev');
+      simpleGit.mergeFromTo('FETCH_HEAD', dev, ['--no-ff'], function(err) {
+      	if (!err) {
+	  simpleGit.pull(remote, dev);
+          simpleGit.push(remote, dev);
+	}
+      });
+    }
+  });
 })
 
 handler.on('push', function (event) {
