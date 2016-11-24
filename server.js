@@ -2,7 +2,8 @@ var http = require('http');
 var createHandler = require('github-webhook-handler');
 var handler = createHandler({ path: '/webhook', secret: 'secret' });
 var simpleGit = require('simple-git')();
-var remote = 'origin';
+var githubRemote = 'github';
+var acquiaRemote = 'acquia'
 var master = 'master';
 
 http.createServer(function (req, res) {
@@ -22,51 +23,11 @@ handler.on('pull_request', function(event) {
   // This leads to a temporary branch FETCH_HEAD (refs/pull/n/merge -> FETCH_HEAD)
   // git fetch origin +refs/pull/n/merge:.
   simpleGit.fetch(remote, pull_request);
-  var featureBranch = event.payload.pull_request.head.ref;
+  var featureBranch = event.payload.pull_request.head.ref + '1';
   console.log(featureBranch);
 
   // git checkout master
-  simpleGit.checkout(master);
-  // Merge the FETCH_HEAD to master branch without committing.
-  // git merge --no-commit FETCH_HEAD
-  simpleGit.mergeFromTo('FETCH_HEAD', master, ['--no-commit'], function(err) {
-    if (!err) {
-      console.log('Trying to merge...');
-    }
-  });
-
-  // Commit. This is a temporary commit to check merge conflicts.
-  // git commit -m "temp commit"
-  simpleGit.commit('temp commit', function(err) {
-    // Merge conflict occured. Reset the merge.
-    if (err) {
-      console.log('Merge conflict: hard reset initiated...');
-      // git reset --hard
-      simpleGit.reset(['--hard']);
-      console.log("Hard reset to HEAD achieved...");
-    }
-    // Merge to master branch is successful, hence the FETCH_HEAD can
-    // be merged to dev branch successfully. Since merge to master branch
-    // was just to check if the conflict arise or not, so merge to master
-    // needs to be reset.
-    else {
-      console.log("Good to be merged with dev branch...");
-      // git reset --hard
-      simpleGit.reset(['--hard']);
-      console.log("Hard reset to HEAD achieved...");
-      // git checkout dev
-      simpleGit.checkout('dev');
-      // git merge --no-ff dev
-      simpleGit.mergeFromTo('FETCH_HEAD', dev, ['--no-ff'], function(err) {
-      	if (!err) {
-	  // git pull origin dev
-	  simpleGit.pull(remote, dev);
-	  // git push origin dev
-          simpleGit.push(remote, dev);
-	}
-      });
-    }
-  });
+  simpleGit.checkoutBranch(featureBranch, 'FETCH_HEAD');
 });
 
 handler.on('push', function (event) {
