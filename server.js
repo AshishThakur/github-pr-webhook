@@ -4,7 +4,6 @@ var handler = createHandler({ path: '/webhook', secret: 'secret' });
 var simpleGit = require('simple-git')();
 var remote = 'origin';
 var master = 'master';
-var dev = 'dev';
 
 http.createServer(function (req, res) {
   handler(req, res, function (err) {
@@ -21,7 +20,10 @@ handler.on('pull_request', function(event) {
   var pull_request = '+refs/pull/' + event.payload.number + '/merge:'
   // git fetch origin +refs/pull/n/merge:, where n is the pull_request number.
   // This leads to a temporary branch FETCH_HEAD (refs/pull/n/merge -> FETCH_HEAD)
+  // git fetch origin +refs/pull/n/merge:.
   simpleGit.fetch(remote, pull_request);
+  var featureBranch = event.payload.pull_request.head.ref;
+  console.log(featureBranch);
 
   // git checkout master
   simpleGit.checkout(master);
