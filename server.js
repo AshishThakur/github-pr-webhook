@@ -21,6 +21,7 @@ handler.on('pull_request', function(event) {
   var pull_request = '+refs/pull/' + event.payload.number + '/merge:'
   // git fetch origin +refs/pull/n/merge:, where n is the pull_request number.
   // This leads to a temporary branch FETCH_HEAD (refs/pull/n/merge -> FETCH_HEAD)
+  // git fetch origin +refs/pull/n/merge:.
   simpleGit.fetch(remote, pull_request);
 
   // git checkout master
